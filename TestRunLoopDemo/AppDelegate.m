@@ -7,21 +7,19 @@
 //
 
 #import "AppDelegate.h"
-#import "DetailViewController.h"
+//#import "DetailViewController.h"
 #import "RunLoopContext.h"
 #import "RunLoopSource.h"
 
 @implementation AppDelegate
 
 + (AppDelegate *)sharedAppDelegate {
-    return [UIApplication sharedApplication].delegate;
+    return (AppDelegate *)[UIApplication sharedApplication].delegate;
 }
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    // Override point for customization after application launch.
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+
     sourcesToPing = [[NSMutableArray alloc] init];
-    
     commandIndex = 0;
     
     NSMutableDictionary* threadDict = [[NSThread currentThread] threadDictionary];
@@ -72,10 +70,14 @@
     NSMutableDictionary* threadDict = [[NSThread currentThread] threadDictionary];
     NSLog(@"timer fird in -> %@",[threadDict valueForKey:@"TheRunLoopKey"]);
     
-    //after testing,you will find that the selector doSomethingOnthreadWithoutRunloopSource did not revoking on the thirdThread . if you changed the waitUntilDone param to YES,the programe will crash.That because:thirdThread 没有加入runloopSource的Runloop将很快退出，该thread也随之退出
+    /* After testing,you will find that the selector doSomethingOnthreadWithoutRunloopSource did not revoked on the thirdThread .
+     if you changed the waitUntilDone param to YES,the programe will crash.
+     That because 'thirdThread' 没有加入runloopSource的Runloop将很快退出，该thread也随之退出*/
     [self performSelector:@selector(doSomethingOnthreadWithoutRunloopSource) onThread:thirdThread withObject:nil waitUntilDone:NO];
     
-    //after testing,you will find that the selector doSomethingOnFourththreadWithoutRunloopSource did not revoking on the fourthThread . if you changed the waitUntilDone param to YES,the programe will  block on this line. That because:fourthThread一直在处理一个空的死循环
+    /*After testing,you will find that the selector doSomethingOnFourththreadWithoutRunloopSource did not revoking on the fourthThread .
+     if you changed the waitUntilDone param to YES,the programe will  block on this line.
+     That because:fourthThread一直在处理一个空的死循环*/
     [self performSelector:@selector(doSomethingOnFourththreadWithoutRunloopSource) onThread:fourthThread withObject:nil waitUntilDone:NO];
     
     if ([sourcesToPing count] > 0) {
@@ -90,7 +92,8 @@
             [timer invalidate];
         }
         else {
-            //send a message to runLoopSource, wake up the thread to do something(just log something for this sample)
+            /*send a message to runLoopSource, wake up the thread to do something
+             (just log something for this sample )*/
             [runLoopSource addCommand:commandIndex withData:@" <from AppDelegate timer Client> "];
             [runLoopSource fireAllCommandsOnRunLoop:runloopContext.runLoop];
         }
